@@ -99,6 +99,7 @@ spcomp_data_4lmer <- subset(Summ_spcomp_diversity_ptype_wPlots, trt!= 'Fence'& t
 # testing the hypotheses about treatment impacts on community diversity, accounting for year-to-year differences
 mod_div.year.trt <- lmer(log(diversity) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                          data = (spcomp_data_4lmer))  
+## MK/HG notes 2024/03/25: Issue here address please.
 plot(resid(mod_div.year.trt) ~ fitted(mod_div.year.trt)) # might need to deal with normality issues
 Anova(mod_div.year.trt) 
 cld(emmeans(mod_div.year.trt, ~yearfac))
@@ -139,6 +140,7 @@ spcomp_data_plants_known$Code
 
 ### make a new column for plant type
 #### what plant types do we have? c4_perennial_grass, c4_annual_forb, c3_perennial_forb, c3_annual_forb, c3_perennial_shrub
+#### MK/HG 2024/03/25 notes: Binary factors similar to NPK above.
 spcomp_data_plants_known$pft[spcomp_data_plants_known$ps_path == 'C4' & 
                                spcomp_data_plants_known$lifespan == 'annual' &
                                spcomp_data_plants_known$lifeform == 'Grass'] <- 'c4_annual_grass'
@@ -289,7 +291,7 @@ cld(emmeans(c4_perennial_grass_lmer, ~yearfac)) # highest in odd (wet) years, bu
 #Summ_spcomp_diversity_ptype_wPlots$ps_path_fac <- as.factor(Summ_spcomp_diversity_ptype_wPlots$ps_path)
 
 ## climate 
-### MK/HG Notes 2024/03/25: Plot_df made for TTABS figures, once precip in modesl can discard.  
+### MK/HG Notes 2024/03/25: Plot_df made for TTABS figures, once precip in models can discard.  
 KLBB_weather <- read_excel("../data/KLBB_weather.xlsx")
 head(KLBB_weather)
 
