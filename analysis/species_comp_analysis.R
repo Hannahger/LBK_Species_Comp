@@ -273,12 +273,6 @@ plot(resid(c4_perennial_grass_lmer) ~ fitted(c4_perennial_grass_lmer)) # check t
 Anova(c4_perennial_grass_lmer)  
 cld(emmeans(c4_perennial_grass_lmer, ~yearfac)) # highest in odd (wet) years, but lots of variability
 
-# HG 3/29/2024; playing with figures 
-ggplot() + 
-  stat_boxplot(data = subset(pft_data_4lmer, pft == "c3_annual_forb" & pft != " c3_perennial_forn" & pft != "c4_annual_forb" & pft != "c4_perennial_grass"),
-               aes(x = as.factor(Year), y = sum_cover), size = 0.75, geom = "errorbar", width = 0.2) +
-  figtheme
-
 
 # TAKE HOME: treatments have no impact on any metric of diversity in any year
 # but there is significant year-to-year variation, with even (i.e., dry) years having
@@ -299,10 +293,10 @@ ggplot() +
 
 ## climate 
 ### MK/HG Notes 2024/03/25: Plot_df made for TTABS figures, once precip in models can discard.  
-KLBB_weather <- read_excel("../data/KLBB_weather.xlsx")
-head(KLBB_weather)
+precip.ds <- read_csv("../data/precip_ds.csv")   ## HG: load in annual precip data from 9/1/2018-8/26/2023
+head(precip.ds)
 
-annual_precip <- KLBB_weather %>% mutate(Date_Time = ymd_hms(Date_Time), Year = year(Date_Time)) %>% group_by(Year) %>% 
+annual_precip <- precip.ds %>% mutate(Date_Time = ymd_hms(Date_Time), Year = year(Date_Time)) %>% group_by(Year) %>% 
   summarise(annual_precip = sum(precip_mm, na.rm = TRUE))
 
 plot_df <- Summ_spcomp_diversity_ptype_wPlots %>% full_join(annual_precip)
