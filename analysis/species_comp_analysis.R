@@ -271,6 +271,13 @@ plot(resid(c4_perennial_grass_lmer) ~ fitted(c4_perennial_grass_lmer)) # check t
 Anova(c4_perennial_grass_lmer)  
 cld(emmeans(c4_perennial_grass_lmer, ~yearfac)) # highest in odd (wet) years, but lots of variability
 
+# HG 3/29/2024; playing with figures 
+ggplot() + 
+  stat_boxplot(data = subset(pft_data_4lmer, pft == "c3_annual_forb" & pft != " c3_perennial_forn" & pft != "c4_annual_forb" & pft != "c4_perennial_grass"),
+               aes(x = as.factor(Year), y = sum_cover), size = 0.75, geom = "errorbar", width = 0.2) +
+  figtheme
+
+
 # TAKE HOME: treatments have no impact on any metric of diversity in any year
 # but there is significant year-to-year variation, with even (i.e., dry) years having
 # the greatest diversity, lowest richness, but highest evenness
