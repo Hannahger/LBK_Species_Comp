@@ -1,0 +1,14 @@
+2024/04/02
+
+Monika
+
+* precip_ds = most recent
+* precip_ds_withinfo = lat and long of station
+* KLBB_weather = at the news site (info w/ more bits)
+
+HG: use precip_ds closer to the site.
+Need: precip graph
+
+
+Zinny: 
+Offered to try and make pft table, Hannah to work on it as well! Wed. 
