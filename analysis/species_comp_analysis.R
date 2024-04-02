@@ -17,6 +17,9 @@ library(readxl)
 library(lubridate)
 library(ggpubr)
 library(patchwork)
+library(gt)
+library(gtsummary)
+library(labelled)
 
 ###############################################################################
 ## Cleaning
@@ -104,6 +107,14 @@ plot(resid(mod_div.year.trt) ~ fitted(mod_div.year.trt)) # might need to deal wi
 Anova(mod_div.year.trt) 
 cld(emmeans(mod_div.year.trt, ~yearfac))
 cld(emmeans(mod_div.year.trt, ~nfac*kfac))
+head(spcomp_data_4lmer)
+
+# Making significance table of mod_div.year.trt
+
+anova_results_d <- as.data.frame(Anova(mod_div.year.trt))
+head(anova_results_d)
+anova_table_d <- gt(anova_results_d, rownames_to_stub = TRUE)
+
 
 mod_rich.year.trt <- lmer(richness ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                           data = (spcomp_data_4lmer))  
