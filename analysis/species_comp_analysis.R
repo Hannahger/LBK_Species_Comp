@@ -102,18 +102,19 @@ spcomp_data_4lmer <- subset(Summ_spcomp_diversity_ptype_wPlots, trt!= 'Fence'& t
 # testing the hypotheses about treatment impacts on community diversity, accounting for year-to-year differences
 mod_div.year.trt <- lmer(log(diversity) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                          data = (spcomp_data_4lmer))  
+head(spcomp_data_4lmer)
+
 ## MK/HG notes 2024/03/25: Issue here address please.
 plot(resid(mod_div.year.trt) ~ fitted(mod_div.year.trt)) # might need to deal with normality issues
 Anova(mod_div.year.trt) 
 cld(emmeans(mod_div.year.trt, ~yearfac))
 cld(emmeans(mod_div.year.trt, ~nfac*kfac))
-head(spcomp_data_4lmer)
+
 
 # Making significance table of mod_div.year.trt
-
-anova_results_d <- as.data.frame(Anova(mod_div.year.trt))
-head(anova_results_d)
-anova_table_d <- gt(anova_results_d, rownames_to_stub = TRUE)
+#anova_results_d <- as.data.frame(Anova(mod_div.year.trt))
+#head(anova_results_d)
+#anova_table_d <- gt(anova_results_d, rownames_to_stub = TRUE)
 
 
 mod_rich.year.trt <- lmer(richness ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
@@ -264,6 +265,25 @@ plot(resid(c3_annual_forb_lmer) ~ fitted(c3_annual_forb_lmer)) # check this
 Anova(c3_annual_forb_lmer)  
 cld(emmeans(c3_annual_forb_lmer, ~yearfac)) # highest in odd (wet) years
 cld(emmeans(c3_annual_forb_lmer, ~pfac*kfac)) # highest in P+K (non-sig)
+
+
+c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
+       aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'blue')
+
+c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
+       aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'green') 
+
+c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
+       aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'yellow') 
+
+c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
+       aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'purple') 
+
+ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
 c3_perennial_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                             data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'))  
