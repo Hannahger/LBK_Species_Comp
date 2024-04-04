@@ -237,6 +237,7 @@ pft_data_trt_types$block[pft_data_trt_types$Plot >28] <- 'block3'
 #### remove certain plot types
 pft_data_4lmer <- subset(pft_data_trt_types, trt!= 'Fence'& trt != 'NPK+Fence'& trt != 'xControl' & DOY > 200)
 
+
 ### fit lmer models for pfts
 levels(as.factor(pft_data_4lmer$pft)) # what pfts do we have?
 hist(subset(pft_data_4lmer, pft == 'c3_annual_forb')$sum_cover_zeroes) # ok!
@@ -426,7 +427,7 @@ master.fig <- ggarrange(fig.1.D, fig.2.D, fig.2.R, fig.2.E)
 
 ## pft by year fig
 c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
-                   aes(yearfac, sum_cover)) + 
+                   aes(yearfac, sum_cover_zeroes)) + 
   geom_boxplot(fill = '#2a9d8f', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
@@ -439,7 +440,7 @@ ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb' & pft == 'c4_annual
 
 
 c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
-                   aes(yearfac, sum_cover)) + 
+                   aes(yearfac, sum_cover_zeroes)) + 
   geom_boxplot(fill = '#FF9200', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
@@ -447,7 +448,7 @@ c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'),
   figtheme
 
 c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
-                   aes(yearfac, sum_cover)) + 
+                   aes(yearfac, sum_cover_zeroes)) + 
   geom_boxplot(fill = 'yellow', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
@@ -455,7 +456,7 @@ c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'),
   figtheme
 
 c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
-                   aes(yearfac, sum_cover)) + 
+                   aes(yearfac, sum_cover_zeroes)) + 
   geom_boxplot(fill = '#adb17dff', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
@@ -464,6 +465,23 @@ c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'),
 
 pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
+ggplot(pft_data_4lmer, aes(yearfac, sum_cover_zeroes, group_by = as.factor(pft), fill = as.factor(trt))) + 
+  geom_boxplot() 
+
+ggplot(pft_data_4lmer, aes(yearfac, sum_cover_zeroes, group_by = as.factor(trt), fill = as.factor(pft))) + 
+  geom_boxplot() 
+
+pft_data_4lmer <- as.data.frame(pft_data_4lmer)
+class(pft_data_4lmer)
+
+unique(pft_data_4lmer$pft)
+data <- pft_data_4lmer %>%
+  filter(pft == c3_annual_forb)
+
+View(data)
+
+ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb' | pft == 'c4_annual_forb'), aes(yearfac, sum_cover_zeroes)) +
+  geom_boxplot()
 
 ## download png's of figures 
 
