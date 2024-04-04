@@ -400,7 +400,7 @@ fig.1.R <- ggplot() +    #getting message "Can't add `scale_y_continuous(limits 
   stat_boxplot(data = subset(plot_df, richness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
               aes(as.factor(trt), richness), size = 0.75, geom = "errorbar", width = 0.2) +
   geom_boxplot(data = subset(plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), richness, fill = as.factor(trt)), outlier.shape = NA,) + 
+              aes(as.factor(trt), richness, fill = as.factor(trt)), outlier.shape = NA) + 
   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
                                "#bb5566", "#bb5566", "#bb5566", "#bb5566"))
   theme(legend.position = "none") + 
@@ -427,15 +427,20 @@ master.fig <- ggarrange(fig.1.D, fig.2.D, fig.2.R, fig.2.E)
 ## pft by year fig
 c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
                    aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'blue', color = 'black') +
+  geom_boxplot(fill = '#2a9d8f', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
   ggtitle("C3 Annual Forbs") +
   figtheme
 
+ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb' & pft == 'c4_annual_forb'),  ### HG 4/4/23; trying to make a grouped boxplot 
+       aes(x = yearfac, y = sum_cover, color = as.factor(pft))) +
+  geom_boxplot()
+
+
 c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
                    aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'green', color = 'black') +
+  geom_boxplot(fill = '#FF9200', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
   ggtitle('C4 Annual Forbs') +
@@ -451,7 +456,7 @@ c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'),
 
 c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
                    aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'purple', color = 'black') +
+  geom_boxplot(fill = '#adb17dff', color = 'black') +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
   labs(x = "Year") +
   ggtitle('C4 Perennial Grasses') +
@@ -472,3 +477,17 @@ png('../plots/pft_fig.png',
 pft.fig
 dev.off()
 
+png('../plots/c4pg_fig.png',
+    width = 8, height = 8, units = 'in', res = 600)
+c4pg_fig
+dev.off ()
+
+png('../plots/c4af_fig.png',
+    width = 8, height = 8, units = 'in', res = 600)
+c4af_fig 
+dev.off()
+
+png('../plots/c3af_fig.png',
+    width = 8, height = 8, units = 'in', res = 600)
+c3af_fig 
+dev.off()
