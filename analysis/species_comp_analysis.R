@@ -267,24 +267,6 @@ cld(emmeans(c3_annual_forb_lmer, ~yearfac)) # highest in odd (wet) years
 cld(emmeans(c3_annual_forb_lmer, ~pfac*kfac)) # highest in P+K (non-sig)
 
 
-c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
-       aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'blue')
-
-c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
-       aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'green') 
-
-c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
-       aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'yellow') 
-
-c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
-       aes(yearfac, sum_cover)) + 
-  geom_boxplot(fill = 'purple') 
-
-ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
-
 c3_perennial_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                             data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'))  
 plot(resid(c3_perennial_forb_lmer) ~ fitted(c3_perennial_forb_lmer)) # check this
@@ -334,7 +316,7 @@ plot_df <- Summ_spcomp_diversity_ptype_wPlots %>% full_join(annual_precip)
 
 
 ###############################################################################
-### making figures for TTABSS
+### making figures for TTABSS/URC/Paper
 ###############################################################################
 
 # fig theme; Thank you Evan for letting me steal this :)
@@ -440,9 +422,44 @@ fig.1.E <- ggplot() +     #getting message "Can't add `scale_y_continuous(limits
   figtheme + 
   theme(legend.position = "none")
 
-  
 master.fig <- ggarrange(fig.1.D, fig.2.D, fig.2.R, fig.2.E)
-  
+
+## pft by year fig
+c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
+                   aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'blue', color = 'black') +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+  labs(x = "Year") +
+  ggtitle("C3 Annual Forbs") +
+  figtheme
+
+c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
+                   aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'green', color = 'black') +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+  labs(x = "Year") +
+  ggtitle('C4 Annual Forbs') +
+  figtheme
+
+c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
+                   aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'yellow', color = 'black') +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+  labs(x = "Year") +
+  ggtitle('C3 Perennial Forbs') +
+  figtheme
+
+c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
+                   aes(yearfac, sum_cover)) + 
+  geom_boxplot(fill = 'purple', color = 'black') +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+  labs(x = "Year") +
+  ggtitle('C4 Perennial Grasses') +
+  figtheme
+
+pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
+
+
 ## download png's of figures 
 
 png("../plots/master.fig.png", 
@@ -450,5 +467,8 @@ png("../plots/master.fig.png",
 master.fig
 dev.off()
 
-
+png('../plots/pft_fig.png',
+    width = 12, height = 9, units = 'in', res = 600)
+pft.fig
+dev.off()
 
