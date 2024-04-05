@@ -20,6 +20,7 @@ library(patchwork)
 library(gt)
 library(gtsummary)
 library(labelled)
+library(scales)
 
 ###############################################################################
 ## Cleaning
@@ -61,7 +62,7 @@ spcomp_diversity$evenness <- spcomp_diversity$diversity/spcomp_diversity$richnes
 head(spcomp_diversity)
 
 ### add in plot treatment information
-plot_information <- read.csv('../../NutNet_LBK/plot_types/plot_types.csv')[,2:3]
+plot_information <- read.csv('../data/plot_types.csv')[,2:3]
 head(plot_information)
 spcomp_diversity_plottype <- left_join(spcomp_diversity, plot_information)
 head(spcomp_diversity_plottype)
@@ -215,7 +216,7 @@ spcomp_data_plants_known_pft_plot_year_allcombos$sum_cover_zeroes <- spcomp_data
 
 ### simplify dataset name and add in plot types
 pft_data <- spcomp_data_plants_known_pft_plot_year_allcombos
-plot_types <- read.csv('../../NutNet_LBK/plot_types/plot_types.csv')
+plot_types <- read.csv('../data/plot_types.csv')
 pft_data_trt <- left_join(pft_data, plot_types[,2:3], by = 'Plot')
 pft_data_trt_types <- pft_data_trt %>%
   mutate(n = ifelse(trt == "N" | trt == "NP" | trt == "NK" | trt == "NPK" | trt == "NPK+Fence", 1, 0),
@@ -247,7 +248,7 @@ hist(subset(pft_data_4lmer, pft == 'c4_annual_forb')$sum_cover_zeroes) # ok!
 hist(subset(pft_data_4lmer, pft == 'c4_perennial_forb')$sum_cover_zeroes) # nope
 hist(subset(pft_data_4lmer, pft == 'c4_perennial_grass')$sum_cover_zeroes) # ok!
 
-#### analysis with all pfts
+#### analysis with all pfts 
 all_pft_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac * pft + (1| plotfac) + (1|block), 
                             data = subset(pft_data_4lmer, 
                                           pft != 'c3_perennial_woody' & pft != 'c4_perennial_forb' & yearfac != '2018'))  
@@ -315,6 +316,15 @@ annual_precip <- precip.ds %>% mutate(Date_Time = ymd_hms(Date_Time), Year = yea
 
 plot_df <- Summ_spcomp_diversity_ptype_wPlots %>% full_join(annual_precip)
 
+
+#using KLBB weather station
+precip.ds <- read_xlsx("../data/KLBB_weather.xlsx")   ## HG: load in annual precip data from 9/1/2018-8/26/2023
+head(precip.ds)
+
+annual_precip <- precip.ds %>% mutate(Date_Time = ymd_hms(Date_Time), Year = year(Date_Time)) %>% group_by(Year) %>% 
+  summarise(annual_precip = sum(precip_mm, na.rm = TRUE))
+
+pft_data_4lmer_precip <- pft_data_4lmer %>% full_join(annual_precip)
 
 ###############################################################################
 ### making figures for TTABSS/URC/Paper
@@ -465,20 +475,80 @@ c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'),
 
 pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
-ggplot(pft_data_4lmer, aes(yearfac, sum_cover_zeroes, group_by = as.factor(pft), fill = as.factor(trt))) + 
-  geom_boxplot() 
 
-ggplot(pft_data_4lmer, aes(yearfac, sum_cover_zeroes, group_by = as.factor(trt), fill = as.factor(pft))) + 
-  geom_boxplot() 
+ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & pft != "c4_perennial_forb"), 
+       aes(yearfac, sum_cover_zeroes, fill = annual_precip)) + 
+      geom_boxplot() +
+  scale_fill_gradient(low = "#d60404", high = "#0047ab") 
+ 
+gradient_colors <- scales::gradient_n_pal(c("red", "blue"))
 
-pft_data_4lmer <- as.data.frame(pft_data_4lmer)
-class(pft_data_4lmer)
 
-unique(pft_data_4lmer$pft)
-data <- pft_data_4lmer %>%
-  filter(pft == c3_annual_forb)
 
-View(data)
+
+# pft cover by year with precip
+ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & 
+                       pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+       aes(yearfac, sum_cover_zeroes, fill = pft)) + 
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_brewer(palette = "Set1", name= "PFT") +
+  scale_color_gradient(low = "#d60404", high = "#0047ab") +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "cover") + 
+  labs(x = "Year") +   
+  figtheme +
+  theme(legend.position = "none") +
+  theme(panel.background = element_blank(),
+        axis.text.x = element_text(hjust = 0.5, color = c("red","blue", "red","blue","purple", "purple")),
+        axis.text.y = element_text(color = "black"))
+  
+pft_data_4lmer_precip$trt <- factor(pft_data_4lmer_precip$trt, levels = c("Control", "N", 
+                                                                  "P", "K", "NP", "NK",
+                                                                  "PK", "NPK"))
+
+# pft cover by trt 
+ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & 
+                       pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+       aes(trt, sum_cover_zeroes, fill = pft)) + 
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_brewer(palette = "Set1", name= "PFT") +
+  scale_color_gradient(low = "#d60404", high = "#0047ab") +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "cover") + 
+  labs(x = "Year") +   
+  figtheme +
+  theme(legend.position = "none") +
+  theme(panel.background = element_blank(),
+        axis.text.x = element_text(hjust = 0.5),
+        axis.text.y = element_text(color = "black"))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb' | pft == 'c4_annual_forb'), aes(yearfac, sum_cover_zeroes)) +
   geom_boxplot()
