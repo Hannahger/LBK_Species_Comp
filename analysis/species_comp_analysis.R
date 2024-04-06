@@ -360,7 +360,10 @@ fig.2.D <- ggplot() +
   scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, 15), name = "Simpson's Diversity") + 
   labs(x = "Year") +   
   figtheme +
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(legend.position = "none")
+fig.2.D
 
 fig.2.R <- ggplot() + 
   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt!= 'NPK+Fence' & trt!= 'xControl'),
@@ -371,7 +374,10 @@ fig.2.R <- ggplot() +
   scale_y_continuous(limits = c(1, 7), breaks = seq(1, 7, 1.5),  name = "Species Richness") + 
   labs(x = "Year") + 
   labs(fill = "Precip. (mm)") +
-  figtheme + theme(legend.position = "top") +
+  figtheme + 
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(legend.key.size = unit(1.5, "cm"), legend.key.height = unit (0.75, "cm"))
 fig.2.R
 
@@ -383,8 +389,11 @@ fig.2.E <- ggplot() +
   scale_fill_gradient(low = "#d60404", high = "#0047ab") +
   scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5), name = "Species Evenness") + 
   labs(x = "Year") + 
-  figtheme +
+  figtheme + 
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(legend.position = "none")
+fig.2.E
 
 ### EAP note for Hannah: changed trt factor levels to reflect order of NPK 
 ### treatments in a bit more of an intuitive order. 
@@ -407,6 +416,7 @@ fig.1.D <- ggplot() +
   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
   figtheme + 
   theme(legend.position = "none")
+fig.1.D
 
 fig.1.R <- ggplot() +  
   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
@@ -475,14 +485,17 @@ pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
 ## making combined pft by year with precip fig
 
-pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & 
+                                       pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
        aes(yearfac, sum_cover_zeroes, fill = pft)) +
   geom_boxplot(outlier.shape = NA)  +
   scale_fill_manual(values = c('#2a9d8f', '#FF9200', '#abd17dff')) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
   labs(x = "Year") +   
   figtheme +
-  theme(legend.position = "top") +
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(panel.background = element_blank(),
         axis.text.x = element_text(hjust = 0.5, color = c("#d60404","#2c46a5", "#d20e0f","#0047ab","#a63253", "#a33456")),
         axis.text.y = element_text(color = "black"))
@@ -494,19 +507,21 @@ pft_data_4lmer_precip$trt <- factor(pft_data_4lmer_precip$trt, levels = c("Contr
                                                                           "P", "K", "NP", "NK",
                                                                           "PK", "NPK"))
 
-pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & 
-                       pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' &
+                                      pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
        aes(trt, sum_cover_zeroes, fill = pft)) + 
   geom_boxplot(outlier.shape = NA) +
-  scale_fill_brewer(palette = "Set1", name= "PFT") +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "cover") + 
-  labs(x = "Year") +   
+  scale_fill_manual(values = c('#2a9d8f', '#FF9200', '#abd17dff')) +
+  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
+  labs(x = "Treatment") +   
   figtheme +
-  theme(legend.position = "none") +
+  theme(legend.position = "top") + 
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(panel.background = element_blank(),
         axis.text.x = element_text(hjust = 0.5),
         axis.text.y = element_text(color = "black"))
-
+pft_trt_fig
 
 ###############################################################################
 ## download png's of figures 
@@ -530,4 +545,9 @@ dev.off()
 png('../plots/pft_year_fig.png', 
     width = 12, height = 8, units = 'in', res = 1500)
 pft_year_fig 
+dev.off()
+
+png('../plots/pft_trt_fig.png',
+    width = 12, height = 8, units = 'in', res = 1500)
+pft_trt_fig
 dev.off()
