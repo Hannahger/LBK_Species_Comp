@@ -375,7 +375,7 @@ fig.2.R <- ggplot() +
   labs(x = "Year") + 
   labs(fill = "Precip. (mm)") +
   figtheme + 
-  theme(legend.position = "top") + 
+  theme(legend.position = "bottom") + 
   theme(axis.text.x = element_text(face = "bold")) +
   theme(axis.text.y = element_text(face = "bold")) +
   theme(legend.key.size = unit(1.5, "cm"), legend.key.height = unit (0.75, "cm"))
@@ -409,8 +409,8 @@ fig.1.D <- ggplot() +
               aes(as.factor(trt), diversity), size = 0.75, geom = "errorbar", width = 0.2) +
   geom_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
               aes(as.factor(trt), diversity, fill = as.factor(trt)), outlier.shape = NA) + 
-  scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
-                               "#bb5566", "#bb5566", "#bb5566", "#bb5566")) + 
+  scale_fill_manual(values = c("gray", "#378805", "#378805", "#378805", "#378805",
+                               "#378805", "#378805", "#378805", "#378805")) + 
   labs(x = "Treatment",y = "Simpson's Diversity") + 
   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
   figtheme + 
