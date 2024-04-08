@@ -411,10 +411,11 @@ fig.1.D <- ggplot() +
               aes(as.factor(trt), diversity, fill = as.factor(trt)), outlier.shape = NA) + 
   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
                                "#bb5566", "#bb5566", "#bb5566", "#bb5566")) + 
-  theme(legend.position = "none") + 
   labs(x = "Treatment",y = "Simpson's Diversity") + 
   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
   figtheme + 
+  theme(axis.text.x = element_text(face = "bold")) +
+  theme(axis.text.y = element_text(face = "bold")) +
   theme(legend.position = "none")
 fig.1.D
 
@@ -526,6 +527,11 @@ pft_trt_fig
 ###############################################################################
 ## download png's of figures 
 ###############################################################################
+
+png('../plots/fig.1.D.png',
+    width = 8, height = 8, units = 'in', res = 1500)
+fig.1.D
+dev.off()
 
 png('../plots/fig.2.R.png',
     width = 8, height = 8, units = 'in', res = 1500)
