@@ -20,13 +20,12 @@ library(ggpubr)
 library(patchwork)
 
 
-
 ###############################################################################
 ## Loading and cleaning data
 ###############################################################################
 
 ### Original data, LBK biomass ----
-biomass_00_raw <- read.csv("data/Biomass.csv")
+biomass_00_raw <- read.csv("Biomass.csv")
 
 
 
@@ -69,7 +68,7 @@ head(biomass_03_mean.weight)
 ### adding in additional site and plot information ----
 
 ## reading in plot information
-plot_information <- read.csv('data/plot_types.csv')[,2:3]
+plot_information <- read.csv('plot_types.csv')[,2:3]
 
 ## adding plot information to biomass data
 biomass_04_plot.info <- left_join(biomass_03_mean.weight, plot_information)
