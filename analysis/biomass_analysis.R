@@ -20,12 +20,13 @@ library(ggpubr)
 library(patchwork)
 
 
+
 ###############################################################################
 ## Loading and cleaning data
 ###############################################################################
 
 ### Original data, LBK biomass ----
-biomass_00_raw <- read.csv("Biomass.csv")
+biomass_00_raw <- read.csv("../data/Biomass.csv")
 
 
 
@@ -42,10 +43,10 @@ biomass_01_plants <- subset(biomass_00_raw, !(pft == 'dead' | pft == 'Dead'))
 unique(biomass_01_plants$pft)
 unique(biomass_01_plants$growth_form)
 
-# grass (should we match NutNet terminology?)
+# grass
 biomass_01_plants$growth_form[biomass_01_plants$pf == 'grasses' | 
-                          biomass_01_plants$pft == 'grasses ' |
-                          biomass_01_plants$pft == 'grass'] <- 'grass'
+                                biomass_01_plants$pft == 'grasses ' |
+                                biomass_01_plants$pft == 'grass'] <- 'grass'
 
 # forb
 biomass_01_plants$growth_form[biomass_01_plants$pf == 'herbs'] <- 'forb'
@@ -60,7 +61,7 @@ biomass_02_grouped <- group_by(biomass_01_plants, Plot, Year, DOY, growth_form)
 head(biomass_02_grouped)
 
 # means for growth_form weights by plot
-biomass_03_mean.weight <- summarise(biomass_02_grouped, weight.mean = mean(weight))
+biomass_03_mean.weight <- summarise(biomass_02_grouped, biomass.weight = mean(weight))
 head(biomass_03_mean.weight)
 
 
@@ -68,7 +69,7 @@ head(biomass_03_mean.weight)
 ### adding in additional site and plot information ----
 
 ## reading in plot information
-plot_information <- read.csv('plot_types.csv')[,2:3]
+plot_information <- read.csv('../data/plot_types.csv')[,2:3]
 
 ## adding plot information to biomass data
 biomass_04_plot.info <- left_join(biomass_03_mean.weight, plot_information)
@@ -97,6 +98,8 @@ biomass_04_plot.info$block[biomass_04_plot.info$Plot >28] <- 'block3'
 biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NPK+Fence' |trt == 'xControl'))
 
 
+
+
 ###############################################################################
 ### model making time
 ###############################################################################
@@ -105,13 +108,43 @@ biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NP
 # testing the hypotheses about treatment impacts on community diversity, 
 # accounting for year-to-year differences
 
-View(biomass_05_cleaned)
+
+## looking over cleaned data
 head(biomass_05_cleaned)
 colnames(biomass_05_cleaned)
 
-# model error: 'isSingular'
-mod_biomass_year.trt <- lmer(log(weight.mean) ~ yearfac * nfac * pfac * kfac + (1|plotfac) + (1|block), data = biomass_05_cleaned)
 
 
+### preliminary plotting biomass_05_cleaned ----
+
+# plot: growth form, biomass weight, and year
+# probably more informative if plotted with a line, look at more later
+(prelim_plot <- ggplot(biomass_05_cleaned, aes (yearfac, biomass.weight)) + 
+    geom_boxplot( aes(fill = growth_form)) + facet_wrap(~ trt, scales = "free") +
+    geom_smooth(method = "lm"))
+
+
+
+### model 01 ----
+
+## model 01
+mod_biomass_year.trt <- lmer(log(biomass.weight) ~ yearfac * nfac * pfac * kfac + (1|plotfac) + (1|block), data = biomass_05_cleaned)
+
+## Looking at model 01 ----
 summary(mod_biomass_year.trt)
+
+# Component-Component plus Residual plot (CCPR plot)
+plot(mod_biomass_year.trt, which = 1)
+plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+
+# ANOVA: !! ERROR: "Error in match.arg(type) : 'arg' must be of length 1"
+Anova(mod_biomass_year.trt, ~ yearfac)
+
+
+
+
+
+
+
+
 
