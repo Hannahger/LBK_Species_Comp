@@ -137,7 +137,7 @@ summary(mod_biomass_year.trt)
 plot(mod_biomass_year.trt, which = 1)
 plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
 
-# ANOVA: !! ERROR: "Error in match.arg(type) : 'arg' must be of length 1"
+# ANOVA: !! ERROR, "Error in match.arg(type) : 'arg' must be of length 1"
 Anova(mod_biomass_year.trt, ~ yearfac)
 
 
