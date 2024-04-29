@@ -113,6 +113,9 @@ biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NP
 head(biomass_05_cleaned)
 colnames(biomass_05_cleaned)
 
+# Quantile plot (QQ plot)
+qqnorm(biomass_05_cleaned$biomass.weight)
+qqline(biomass_05_cleaned$biomass.weight)
 
 
 ### preliminary plotting biomass_05_cleaned ----
@@ -136,6 +139,8 @@ summary(mod_biomass_year.trt)
 # Component-Component plus Residual plot (CCPR plot)
 plot(mod_biomass_year.trt, which = 1)
 plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+
+# Quantile plot (or a QQ plot)
 
 # ANOVA: !! ERROR, "Error in match.arg(type) : 'arg' must be of length 1"
 Anova(mod_biomass_year.trt, ~ yearfac)
