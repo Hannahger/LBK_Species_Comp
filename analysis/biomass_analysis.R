@@ -101,7 +101,7 @@ biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NP
 
 
 ###############################################################################
-### model making time
+### Model 01 : Biomass, year and treatments 🤟
 ###############################################################################
 
 ## statistical models of diversity across years
@@ -109,40 +109,27 @@ biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NP
 # accounting for year-to-year differences
 
 
-## looking over cleaned data
-head(biomass_05_cleaned)
-colnames(biomass_05_cleaned)
-
-
-
-### preliminary plotting biomass_05_cleaned ----
-
-# plot: growth form, biomass weight, and year
-# probably more informative if plotted with a line, look at more later
-(prelim_plot <- ggplot(biomass_05_cleaned, aes (yearfac, biomass.weight)) + 
-    geom_boxplot( aes(fill = growth_form)) + facet_wrap(~ trt, scales = "free") +
-    geom_smooth(method = "lm"))
-
-
-
-### model 01 ----
+#### Model 01 : Biomass, year and treatments ----
 
 ## model 01
 mod_biomass_year.trt <- lmer(log(biomass.weight) ~ yearfac * nfac * pfac * kfac + (1|plotfac) + (1|block), data = biomass_05_cleaned)
 
-## Looking at model 01 ----
-summary(mod_biomass_year.trt)
-
+## viewing
 # Component-Component plus Residual plot (CCPR plot)
 plot(mod_biomass_year.trt, which = 1)
 plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
 
-# ANOVA: !! ERROR, "Error in match.arg(type) : 'arg' must be of length 1"
-Anova(mod_biomass_year.trt, ~ yearfac)
+## Anova
+biomass_mod_anova <- Anova(mod_biomass_year.trt)
+biomass_mod_anova
+summary(biomass_mod_anova)
 
 
 
 
+###############################################################################
+### visualization
+###############################################################################
 
 
 
