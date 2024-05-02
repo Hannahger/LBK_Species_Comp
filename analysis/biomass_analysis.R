@@ -6,8 +6,8 @@
 
 ## load packages
 library(tidyverse)
-library(ggplot2)  ## do not install again queen 
-library(dplyr)
+#library(ggplot2)  ## do not install again queen 
+#library(dplyr)
 library(lme4)
 library(car)
 library(emmeans)
@@ -97,8 +97,10 @@ biomass_04_plot.info$block[biomass_04_plot.info$Plot >28] <- 'block3'
 ## removing certain plot types (fence, extra control plots)
 biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NPK+Fence' |trt == 'xControl'))
 
-
-
+## aggregate to a single value for biomass per plot per year
+biomass_06_cleaned_groupby <- group_by(biomass_05_cleaned, Plot, Year, DOY, trt, n, p, k,
+                                       nfac, pfac, kfac, plotfac, yearfac, block)
+biomass_06_cleaned <- summarise(biomass_06_cleaned_groupby, biomass.weight_all = sum(biomass.weight,na.rm=T))
 
 ###############################################################################
 ### Model 01 : Biomass, year and treatments 🤟
@@ -112,17 +114,23 @@ biomass_05_cleaned <- subset(biomass_04_plot.info, !(trt == 'Fence' | trt == 'NP
 #### Model 01 : Biomass, year and treatments ----
 
 ## model 01
-mod_biomass_year.trt <- lmer(log(biomass.weight) ~ yearfac * nfac * pfac * kfac + (1|plotfac) + (1|block), data = biomass_05_cleaned)
+mod_biomass_year.trt <- lmer(log(biomass.weight_all) ~ yearfac * nfac * pfac * kfac + 
+                               (1|plotfac) + (1|block), data = biomass_06_cleaned) # log transform to fix normality issue
 
-## viewing
+## check the residuals
 # Component-Component plus Residual plot (CCPR plot)
 plot(mod_biomass_year.trt, which = 1)
 plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+hist(biomass_06_cleaned$biomass.weight_all)
+hist(log(biomass_06_cleaned$biomass.weight_all))
 
 ## Anova
 biomass_mod_anova <- Anova(mod_biomass_year.trt)
 biomass_mod_anova
 summary(biomass_mod_anova)
+
+## post-hoc analyses
+emmeans(mod_biomass_year.trt, ~yearfac)
 
 
 
