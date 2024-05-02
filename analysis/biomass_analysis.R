@@ -26,7 +26,7 @@ library(patchwork)
 ###############################################################################
 
 ### Original data, LBK biomass ----
-biomass_00_raw <- read.csv("../data/Biomass.csv")
+biomass_00_raw <- read.csv('data/Biomass.csv')
 
 
 
@@ -69,7 +69,7 @@ head(biomass_03_mean.weight)
 ### adding in additional site and plot information ----
 
 ## reading in plot information
-plot_information <- read.csv('../data/plot_types.csv')[,2:3]
+plot_information <- read.csv('data/plot_types.csv')[,2:3]
 
 ## adding plot information to biomass data
 biomass_04_plot.info <- left_join(biomass_03_mean.weight, plot_information)
@@ -133,13 +133,8 @@ summary(biomass_mod_anova)
 emmeans(mod_biomass_year.trt, ~yearfac)
 
 
-
-
 ###############################################################################
-### visualization
+### Figures
 ###############################################################################
 
-
-
-
-
+### show with year by treatment graph
