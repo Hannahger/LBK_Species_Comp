@@ -5,8 +5,6 @@
 
 ## load packages
 library(tidyverse)
-library(ggplot2)  ## do not install again queen 
-library(dplyr)
 library(lme4)
 library(car)
 library(emmeans)
@@ -486,11 +484,10 @@ pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
 ## making combined pft by year with precip fig
 
-pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' & 
-                                       pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
        aes(yearfac, sum_cover_zeroes, fill = pft)) +
-  geom_boxplot(outlier.shape = NA)  +
-  scale_fill_manual(values = c('#2a9d8f', '#FF9200', '#abd17dff')) +
+  geom_boxplot(outlier.shape = NA) +
+  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d')) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
   labs(x = "Year") +   
   figtheme +
@@ -508,11 +505,10 @@ pft_data_4lmer_precip$trt <- factor(pft_data_4lmer_precip$trt, levels = c("Contr
                                                                           "P", "K", "NP", "NK",
                                                                           "PK", "NPK"))
 
-pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody' &
-                                      pft != "c4_perennial_forb" & pft != "c3_perennial_forb"), 
+pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
        aes(trt, sum_cover_zeroes, fill = pft)) + 
   geom_boxplot(outlier.shape = NA) +
-  scale_fill_manual(values = c('#2a9d8f', '#FF9200', '#abd17dff')) +
+  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d')) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
   labs(x = "Treatment") +   
   figtheme +
