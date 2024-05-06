@@ -339,7 +339,7 @@ figtheme <- theme_bw(base_size = 20) +
         strip.background = element_blank(),
         axis.title = element_text(face = "bold"),
         strip.text = element_text(face = "bold"),
-        panel.border = element_rect(size = 1.5, fill = NA),
+        panel.border = element_rect(linewidth = 1.5, fill = NA),
         legend.box.background = element_blank(),
         legend.key = element_rect(fill = NA),
         legend.background=element_blank(),
@@ -351,7 +351,7 @@ figtheme <- theme_bw(base_size = 20) +
 # fig.2 Significant year-to-year variation between wet and dry years 
 fig.2.D <- ggplot() + 
   stat_boxplot(data = subset(DER_plot_df, diversity < 100 & trt != 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'), 
-               aes(x = as.factor(Year), y = diversity), size = 0.75, geom = "errorbar", width = 0.2)  +
+               aes(x = as.factor(Year), y = diversity), linewidth = 0.75, geom = "errorbar", width = 0.2)  +
   geom_boxplot(data = subset(DER_plot_df, diversity < 100 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
                aes(as.factor(Year), diversity, fill = annual_precip_DER), outlier.shape = NA) + 
   scale_fill_gradient(low = "#d60404", high = "#0047ab") + 
@@ -365,7 +365,7 @@ fig.2.D
 
 fig.2.R <- ggplot() + 
   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt!= 'NPK+Fence' & trt!= 'xControl'),
-               aes(as.factor(Year), richness), size = .75, geom = "errorbar", width = 0.2) + 
+               aes(as.factor(Year), richness), linewidth = .75, geom = "errorbar", width = 0.2) + 
   geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
                aes(as.factor(Year), richness, fill = annual_precip_DER), outlier.shape = NA) + 
   scale_fill_gradient(low = "#d60404", high = "#0047ab") +
@@ -381,7 +381,7 @@ fig.2.R
 
 fig.2.E <- ggplot() + 
   stat_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
-               aes(as.factor(Year), evenness), size = 0.75, geom = "errorbar", width = 0.2) +  
+               aes(as.factor(Year), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +  
   geom_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
                aes(as.factor(Year), evenness, fill = annual_precip_DER), outlier.shape = NA) + 
   scale_fill_gradient(low = "#d60404", high = "#0047ab") +
@@ -404,7 +404,7 @@ DER_plot_df$trt <- factor(DER_plot_df$trt, levels = c("Control", "N", "P", "K",
 
 fig.1.D <- ggplot() + 
   stat_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), diversity), size = 0.75, geom = "errorbar", width = 0.2) +
+              aes(as.factor(trt), diversity), linewidth = 0.75, geom = "errorbar", width = 0.2) +
   geom_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
               aes(as.factor(trt), diversity, fill = as.factor(trt)), outlier.shape = NA) + 
   scale_fill_manual(values = c("gray", "#378805", "#378805", "#378805", "#378805",
@@ -419,7 +419,7 @@ fig.1.D
 
 fig.1.R <- ggplot() +  
   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), richness), size = 0.75, geom = "errorbar", width = 0.2) +
+              aes(as.factor(trt), richness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
   geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
               aes(as.factor(trt), richness, fill = as.factor(trt)), outlier.shape = NA) + 
   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
