@@ -484,11 +484,15 @@ pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 
 ## making combined pft by year with precip fig
 
+labels <- c(expression(bold("C"["3"]*"AF")), expression(bold("C"["3"]*"PF")),
+            expression(bold("C"["4"]*"AF")), expression(bold("C"["4"]*"PF")),
+            expression(bold("C"["4"]*"PG")))
+
 pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
        aes(yearfac, sum_cover_zeroes, fill = pft)) +
   geom_boxplot(outlier.shape = NA) +
   scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d'), 
-                    labels = c('C3AF', 'C3PF', 'C4AF', 'C4PF', 'C4PG')) +
+                    labels = labels) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
   labs(x = "Year") +   
   figtheme +
