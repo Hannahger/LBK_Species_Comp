@@ -432,7 +432,7 @@ fig.1.R <- ggplot() +
 
 fig.1.E <- ggplot() +  
   stat_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), evenness), size = 0.75, geom = "errorbar", width = 0.2) +
+              aes(as.factor(trt), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
   geom_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
               aes(as.factor(trt), evenness, fill = as.factor(trt)), outlier.shape = NA) +
   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
@@ -487,11 +487,13 @@ pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
 pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
        aes(yearfac, sum_cover_zeroes, fill = pft)) +
   geom_boxplot(outlier.shape = NA) +
-  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d')) +
+  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d'), 
+                    labels = c('C3AF', 'C3PF', 'C4AF', 'C4PF', 'C4PG')) +
   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
   labs(x = "Year") +   
   figtheme +
   theme(legend.position = "top") + 
+  theme(legend.text = element_text(face = 'bold')) +
   theme(axis.text.x = element_text(face = "bold")) +
   theme(axis.text.y = element_text(face = "bold")) +
   theme(panel.background = element_blank(),
@@ -515,9 +517,8 @@ pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_
   theme(legend.position = "top") + 
   theme(axis.text.x = element_text(face = "bold")) +
   theme(axis.text.y = element_text(face = "bold")) +
-  theme(panel.background = element_blank(),
-        axis.text.x = element_text(hjust = 0.5),
-        axis.text.y = element_text(color = "black"))
+  theme(axis.text.x = element_text(color = 'black')) +
+  theme(axis.text.y = element_text(color = 'black'))
 pft_trt_fig
 
 ###############################################################################
