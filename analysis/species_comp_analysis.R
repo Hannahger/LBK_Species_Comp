@@ -18,6 +18,7 @@
 # model 05: biomass ~ 727 
 ###############################################################################
 
+
 ## load packages
 library(tidyverse)
 library(lme4)
@@ -296,28 +297,42 @@ hist(subset(pft_data_4lmer, pft == 'c4_perennial_grass')$sum_cover_zeroes) # ok!
 ###############################################################################
 
 #### analysis with all pfts 
-all_pft_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac * pft + (1| plotfac) + (1|block), 
+all_pft_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac 
+                     * nfac * pfac * kfac * pft + (1| plotfac) + (1|block), 
                             data = subset(pft_data_4lmer, 
-                                          pft != 'c3_perennial_woody' & pft != 'c4_perennial_forb' & yearfac != '2018'))  
+                                          pft != 'c3_perennial_woody' &
+                                            pft != 'c4_perennial_forb' &
+                                            yearfac != '2018'))  
+
 plot(resid(all_pft_lmer) ~ fitted(all_pft_lmer)) # check this
 Anova(all_pft_lmer)  
-cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c3_annual_forb'))) # highest in odd years
-cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c4_annual_forb'))) # no even/odd split, lowest in 2019, highest in 2021
-cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c3_perennial_forb'))) # high in 2020
-cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c4_perennial_grass'))) # low in 2020
+# highest in odd years
+cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c3_annual_forb')))
+# no even/odd split, lowest in 2019, highest in 2021
+cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c4_annual_forb'))) 
+# high in 2020
+cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c3_perennial_forb')))
+# low in 2020
+cld(emmeans(all_pft_lmer, ~yearfac, at = list(pft = 'c4_perennial_grass')))
 cld(emmeans(all_pft_lmer, ~nfac*pft))
 
 #### by pft analysis
-c3_annual_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
-                              data = subset(pft_data_4lmer, pft == 'c3_annual_forb'))  
+c3_annual_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * 
+                              nfac * pfac * kfac + (1| plotfac) + (1|block), 
+                              data = subset(pft_data_4lmer, 
+                                            pft == 'c3_annual_forb')) 
+
+## check the residuals
 plot(resid(c3_annual_forb_lmer) ~ fitted(c3_annual_forb_lmer)) # check this
 Anova(c3_annual_forb_lmer)  
 cld(emmeans(c3_annual_forb_lmer, ~yearfac)) # highest in odd (wet) years
 cld(emmeans(c3_annual_forb_lmer, ~pfac*kfac)) # highest in P+K (non-sig)
 
 
-c3_perennial_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
-                            data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'))  
+c3_perennial_forb_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * 
+                                 nfac * pfac * kfac + (1| plotfac) + (1|block), 
+                               data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'))
+
 plot(resid(c3_perennial_forb_lmer) ~ fitted(c3_perennial_forb_lmer)) # check this
 Anova(c3_perennial_forb_lmer)  
 cld(emmeans(c3_perennial_forb_lmer, ~yearfac)) # highest in even (dry) years
@@ -381,232 +396,234 @@ pft_data_4lmer_precip <- pft_data_4lmer %>% full_join(annual_precip_pft)
 ### making figures for TTABSS/URC/Paper
 ###############################################################################
 
+## MRK: commented out figure code, since figure were already made. 
+
 # fig theme; Thank you Evan for letting me steal this :)
 
-figtheme <- theme_bw(base_size = 20) +
-  theme(panel.background = element_blank(),
-        strip.background = element_blank(),
-        axis.title = element_text(face = "bold"),
-        strip.text = element_text(face = "bold"),
-        panel.border = element_rect(linewidth = 1.5, fill = NA),
-        legend.box.background = element_blank(),
-        legend.key = element_rect(fill = NA),
-        legend.background=element_blank(),
-        legend.title = element_text(face = "bold"),
-        axis.ticks.length = unit(0.25, "cm"),
-        panel.grid.minor.y = element_blank(),
-        legend.text.align = 0)
-
-# fig.2 Significant year-to-year variation between wet and dry years 
-fig.2.D <- ggplot() + 
-  stat_boxplot(data = subset(DER_plot_df, diversity < 100 & trt != 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'), 
-               aes(x = as.factor(Year), y = diversity), linewidth = 0.75, geom = "errorbar", width = 0.2)  +
-  geom_boxplot(data = subset(DER_plot_df, diversity < 100 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-               aes(as.factor(Year), diversity, fill = annual_precip_DER), outlier.shape = NA) + 
-  scale_fill_gradient(low = "#d60404", high = "#0047ab") + 
-  scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, 15), name = "Simpson's Diversity") + 
-  labs(x = "Year") +   
-  figtheme +
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(legend.position = "none")
-fig.2.D
-
-fig.2.R <- ggplot() + 
-  stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt!= 'NPK+Fence' & trt!= 'xControl'),
-               aes(as.factor(Year), richness), linewidth = .75, geom = "errorbar", width = 0.2) + 
-  geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-               aes(as.factor(Year), richness, fill = annual_precip_DER), outlier.shape = NA) + 
-  scale_fill_gradient(low = "#d60404", high = "#0047ab") +
-  scale_y_continuous(limits = c(1, 7), breaks = seq(1, 7, 1.5),  name = "Species Richness") + 
-  labs(x = "Year") + 
-  labs(fill = "Precip. (mm)") +
-  figtheme + 
-  theme(legend.position = "bottom") + 
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(legend.key.size = unit(1.5, "cm"), legend.key.height = unit (0.75, "cm"))
-fig.2.R
-
-fig.2.E <- ggplot() + 
-  stat_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
-               aes(as.factor(Year), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +  
-  geom_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-               aes(as.factor(Year), evenness, fill = annual_precip_DER), outlier.shape = NA) + 
-  scale_fill_gradient(low = "#d60404", high = "#0047ab") +
-  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5), name = "Species Evenness") + 
-  labs(x = "Year") + 
-  figtheme + 
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(legend.position = "none")
-fig.2.E
-
-### EAP note for Hannah: changed trt factor levels to reflect order of NPK 
-### treatments in a bit more of an intuitive order. 
-### Previous order: Control, K, N, NK, NP, NPK, P, PK
-### New order:  Control, N, P, K, NP, NK, PK, NPK)
-
-DER_plot_df$trt <- factor(DER_plot_df$trt, levels = c("Control", "N", "P", "K",
-                                              "NP", "NK", "PK", "NPK",
-                                              "xControl", "Fence", "NPK+Fence"))
-
-fig.1.D <- ggplot() + 
-  stat_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), diversity), linewidth = 0.75, geom = "errorbar", width = 0.2) +
-  geom_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), diversity, fill = as.factor(trt)), outlier.shape = NA) + 
-  scale_fill_manual(values = c("gray", "#378805", "#378805", "#378805", "#378805",
-                               "#378805", "#378805", "#378805", "#378805")) + 
-  labs(x = "Treatment",y = "Simpson's Diversity") + 
-  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
-  figtheme + 
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(legend.position = "none")
-fig.1.D
-
-fig.1.R <- ggplot() +  
-  stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), richness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
-  geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), richness, fill = as.factor(trt)), outlier.shape = NA) + 
-  scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
-                               "#bb5566", "#bb5566", "#bb5566", "#bb5566")) +
-  theme(legend.position = "none") + 
-  labs(x = "Treatment", y = "Species Richness") + 
-  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5)) +
-  figtheme +
-  theme(legend.position = "none")
-
-fig.1.E <- ggplot() +  
-  stat_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
-  geom_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
-              aes(as.factor(trt), evenness, fill = as.factor(trt)), outlier.shape = NA) +
-  scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
-                             "#bb5566", "#bb5566", "#bb5566", "#bb5566")) +
-  theme(legend.position = "none") + 
-  labs(x = "Treatment", y = "Species Evenness") + 
-  scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5)) +
-  figtheme + 
-  theme(legend.position = "none")
-
-## pft by year fig
-
-c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
-                   aes(yearfac, sum_cover_zeroes)) + 
-  geom_boxplot(fill = '#2a9d8f', color = 'black') +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
-  labs(x = "Year") +
-  ggtitle("C3 Annual Forbs") +
-  figtheme
-
-
-c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
-                   aes(yearfac, sum_cover_zeroes)) + 
-  geom_boxplot(fill = '#FF9200', color = 'black') +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
-  labs(x = "Year") +
-  ggtitle('C4 Annual Forbs') +
-  figtheme
-
-
-c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
-                   aes(yearfac, sum_cover_zeroes)) + 
-  geom_boxplot(fill = 'yellow', color = 'black') +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
-  labs(x = "Year") +
-  ggtitle('C3 Perennial Forbs') +
-  figtheme
-
-
-c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
-                   aes(yearfac, sum_cover_zeroes)) + 
-  geom_boxplot(fill = '#adb17dff', color = 'black') +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
-  labs(x = "Year") +
-  ggtitle('C4 Perennial Grasses') +
-  figtheme
-
-pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
-
-## making combined pft by year with precip fig
-
-labels <- c(expression(bold("C"["3"]*"AF")), expression(bold("C"["3"]*"PF")),
-            expression(bold("C"["4"]*"AF")), expression(bold("C"["4"]*"PF")),
-            expression(bold("C"["4"]*"PG")))
-
-pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
-       aes(yearfac, sum_cover_zeroes, fill = pft)) +
-  geom_boxplot(outlier.shape = NA) +
-  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d'), 
-                    labels = labels) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
-  labs(x = "Year") +   
-  figtheme +
-  theme(legend.position = "top") + 
-  theme(legend.text = element_text(face = 'bold')) +
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(panel.background = element_blank(),
-        axis.text.x = element_text(hjust = 0.5, color = c("#d60404","#2c46a5", "#d20e0f","#0047ab","#a63253", "#a33456")),
-        axis.text.y = element_text(color = "black"))
-pft_year_fig  
-
-## making pft by trt fig 
-
-pft_data_4lmer_precip$trt <- factor(pft_data_4lmer_precip$trt, levels = c("Control", "N", 
-                                                                          "P", "K", "NP", "NK",
-                                                                          "PK", "NPK"))
-
-pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
-       aes(trt, sum_cover_zeroes, fill = pft)) + 
-  geom_boxplot(outlier.shape = NA) +
-  scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d')) +
-  scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
-  labs(x = "Treatment") +   
-  figtheme +
-  theme(legend.position = "top") + 
-  theme(axis.text.x = element_text(face = "bold")) +
-  theme(axis.text.y = element_text(face = "bold")) +
-  theme(axis.text.x = element_text(color = 'black')) +
-  theme(axis.text.y = element_text(color = 'black'))
-pft_trt_fig
-
-###############################################################################
-## download png's of figures 
-###############################################################################
-
-png('../plots/fig.1.D.png',
-    width = 8, height = 8, units = 'in', res = 1500)
-fig.1.D
-dev.off()
-
-png('../plots/fig.2.R.png',
-    width = 8, height = 8, units = 'in', res = 1500)
-fig.2.R
-dev.off()
-
-png('../plots/fig.2.D.png',
-    width = 8, height = 8, units = 'in', res = 1500)
-fig.2.D
-dev.off()
-
-png('../plots/fig.2.E.png',
-    width = 8, height = 8, units = 'in', res = 1500)
-fig.2.E
-dev.off()
-
-png('../plots/pft_year_fig.png', 
-    width = 12, height = 8, units = 'in', res = 1500)
-pft_year_fig 
-dev.off()
-
-png('../plots/pft_trt_fig.png',
-    width = 12, height = 8, units = 'in', res = 1500)
-pft_trt_fig
-dev.off()
+# figtheme <- theme_bw(base_size = 20) +
+#   theme(panel.background = element_blank(),
+#         strip.background = element_blank(),
+#         axis.title = element_text(face = "bold"),
+#         strip.text = element_text(face = "bold"),
+#         panel.border = element_rect(linewidth = 1.5, fill = NA),
+#         legend.box.background = element_blank(),
+#         legend.key = element_rect(fill = NA),
+#         legend.background=element_blank(),
+#         legend.title = element_text(face = "bold"),
+#         axis.ticks.length = unit(0.25, "cm"),
+#         panel.grid.minor.y = element_blank(),
+#         legend.text.align = 0)
+# 
+# # fig.2 Significant year-to-year variation between wet and dry years 
+# fig.2.D <- ggplot() + 
+#   stat_boxplot(data = subset(DER_plot_df, diversity < 100 & trt != 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'), 
+#                aes(x = as.factor(Year), y = diversity), linewidth = 0.75, geom = "errorbar", width = 0.2)  +
+#   geom_boxplot(data = subset(DER_plot_df, diversity < 100 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#                aes(as.factor(Year), diversity, fill = annual_precip_DER), outlier.shape = NA) + 
+#   scale_fill_gradient(low = "#d60404", high = "#0047ab") + 
+#   scale_y_continuous(limits = c(0, 45), breaks = seq(0, 45, 15), name = "Simpson's Diversity") + 
+#   labs(x = "Year") +   
+#   figtheme +
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(legend.position = "none")
+# fig.2.D
+# 
+# fig.2.R <- ggplot() + 
+#   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt!= 'NPK+Fence' & trt!= 'xControl'),
+#                aes(as.factor(Year), richness), linewidth = .75, geom = "errorbar", width = 0.2) + 
+#   geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#                aes(as.factor(Year), richness, fill = annual_precip_DER), outlier.shape = NA) + 
+#   scale_fill_gradient(low = "#d60404", high = "#0047ab") +
+#   scale_y_continuous(limits = c(1, 7), breaks = seq(1, 7, 1.5),  name = "Species Richness") + 
+#   labs(x = "Year") + 
+#   labs(fill = "Precip. (mm)") +
+#   figtheme + 
+#   theme(legend.position = "bottom") + 
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(legend.key.size = unit(1.5, "cm"), legend.key.height = unit (0.75, "cm"))
+# fig.2.R
+# 
+# fig.2.E <- ggplot() + 
+#   stat_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
+#                aes(as.factor(Year), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +  
+#   geom_boxplot(data = subset(DER_plot_df, evenness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#                aes(as.factor(Year), evenness, fill = annual_precip_DER), outlier.shape = NA) + 
+#   scale_fill_gradient(low = "#d60404", high = "#0047ab") +
+#   scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5), name = "Species Evenness") + 
+#   labs(x = "Year") + 
+#   figtheme + 
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(legend.position = "none")
+# fig.2.E
+# 
+# ### EAP note for Hannah: changed trt factor levels to reflect order of NPK 
+# ### treatments in a bit more of an intuitive order. 
+# ### Previous order: Control, K, N, NK, NP, NPK, P, PK
+# ### New order:  Control, N, P, K, NP, NK, PK, NPK)
+# 
+# DER_plot_df$trt <- factor(DER_plot_df$trt, levels = c("Control", "N", "P", "K",
+#                                               "NP", "NK", "PK", "NPK",
+#                                               "xControl", "Fence", "NPK+Fence"))
+# 
+# fig.1.D <- ggplot() + 
+#   stat_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), diversity), linewidth = 0.75, geom = "errorbar", width = 0.2) +
+#   geom_boxplot(data = subset(DER_plot_df, diversity < 60 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), diversity, fill = as.factor(trt)), outlier.shape = NA) + 
+#   scale_fill_manual(values = c("gray", "#378805", "#378805", "#378805", "#378805",
+#                                "#378805", "#378805", "#378805", "#378805")) + 
+#   labs(x = "Treatment",y = "Simpson's Diversity") + 
+#   scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
+#   figtheme + 
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(legend.position = "none")
+# fig.1.D
+# 
+# fig.1.R <- ggplot() +  
+#   stat_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' &  trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), richness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
+#   geom_boxplot(data = subset(DER_plot_df, richness & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), richness, fill = as.factor(trt)), outlier.shape = NA) + 
+#   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
+#                                "#bb5566", "#bb5566", "#bb5566", "#bb5566")) +
+#   theme(legend.position = "none") + 
+#   labs(x = "Treatment", y = "Species Richness") + 
+#   scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5)) +
+#   figtheme +
+#   theme(legend.position = "none")
+# 
+# fig.1.E <- ggplot() +  
+#   stat_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), evenness), linewidth = 0.75, geom = "errorbar", width = 0.2) +
+#   geom_boxplot(data = subset(DER_plot_df, evenness < 10 & trt!= 'Fence' & trt != 'NPK+Fence' & trt != 'xControl'),
+#               aes(as.factor(trt), evenness, fill = as.factor(trt)), outlier.shape = NA) +
+#   scale_fill_manual(values = c("gray", "#bb5566", "#bb5566", "#bb5566", "#bb5566",
+#                              "#bb5566", "#bb5566", "#bb5566", "#bb5566")) +
+#   theme(legend.position = "none") + 
+#   labs(x = "Treatment", y = "Species Evenness") + 
+#   scale_y_continuous(limits = c(0, 10), breaks = seq(0, 10, 2.5)) +
+#   figtheme + 
+#   theme(legend.position = "none")
+# 
+# ## pft by year fig
+# 
+# c3af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_annual_forb'), 
+#                    aes(yearfac, sum_cover_zeroes)) + 
+#   geom_boxplot(fill = '#2a9d8f', color = 'black') +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+#   labs(x = "Year") +
+#   ggtitle("C3 Annual Forbs") +
+#   figtheme
+# 
+# 
+# c4af_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_annual_forb'), 
+#                    aes(yearfac, sum_cover_zeroes)) + 
+#   geom_boxplot(fill = '#FF9200', color = 'black') +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+#   labs(x = "Year") +
+#   ggtitle('C4 Annual Forbs') +
+#   figtheme
+# 
+# 
+# c3pf_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c3_perennial_forb'), 
+#                    aes(yearfac, sum_cover_zeroes)) + 
+#   geom_boxplot(fill = 'yellow', color = 'black') +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+#   labs(x = "Year") +
+#   ggtitle('C3 Perennial Forbs') +
+#   figtheme
+# 
+# 
+# c4pg_fig <- ggplot(data = subset(pft_data_4lmer, pft == 'c4_perennial_grass'), 
+#                    aes(yearfac, sum_cover_zeroes)) + 
+#   geom_boxplot(fill = '#adb17dff', color = 'black') +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") +
+#   labs(x = "Year") +
+#   ggtitle('C4 Perennial Grasses') +
+#   figtheme
+# 
+# pft.fig <- ggarrange(c3af_fig, c4af_fig, c3pf_fig, c4pg_fig)
+# 
+# ## making combined pft by year with precip fig
+# 
+# labels <- c(expression(bold("C"["3"]*"AF")), expression(bold("C"["3"]*"PF")),
+#             expression(bold("C"["4"]*"AF")), expression(bold("C"["4"]*"PF")),
+#             expression(bold("C"["4"]*"PG")))
+# 
+# pft_year_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
+#        aes(yearfac, sum_cover_zeroes, fill = pft)) +
+#   geom_boxplot(outlier.shape = NA) +
+#   scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d'), 
+#                     labels = labels) +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
+#   labs(x = "Year") +   
+#   figtheme +
+#   theme(legend.position = "top") + 
+#   theme(legend.text = element_text(face = 'bold')) +
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(panel.background = element_blank(),
+#         axis.text.x = element_text(hjust = 0.5, color = c("#d60404","#2c46a5", "#d20e0f","#0047ab","#a63253", "#a33456")),
+#         axis.text.y = element_text(color = "black"))
+# pft_year_fig  
+# 
+# ## making pft by trt fig 
+# 
+# pft_data_4lmer_precip$trt <- factor(pft_data_4lmer_precip$trt, levels = c("Control", "N", 
+#                                                                           "P", "K", "NP", "NK",
+#                                                                           "PK", "NPK"))
+# 
+# pft_trt_fig <- ggplot(data = subset(pft_data_4lmer_precip, pft != 'c3_perennial_woody'), 
+#        aes(trt, sum_cover_zeroes, fill = pft)) + 
+#   geom_boxplot(outlier.shape = NA) +
+#   scale_fill_manual(values = c('#f6bb2f', '#ad2831', '#e06b22', '#472d30', '#4f772d')) +
+#   scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, 25), name = "Cover") + 
+#   labs(x = "Treatment") +   
+#   figtheme +
+#   theme(legend.position = "top") + 
+#   theme(axis.text.x = element_text(face = "bold")) +
+#   theme(axis.text.y = element_text(face = "bold")) +
+#   theme(axis.text.x = element_text(color = 'black')) +
+#   theme(axis.text.y = element_text(color = 'black'))
+# pft_trt_fig
+# 
+# ###############################################################################
+# ## download png's of figures 
+# ###############################################################################
+# 
+# png('../plots/fig.1.D.png',
+#     width = 8, height = 8, units = 'in', res = 1500)
+# fig.1.D
+# dev.off()
+# 
+# png('../plots/fig.2.R.png',
+#     width = 8, height = 8, units = 'in', res = 1500)
+# fig.2.R
+# dev.off()
+# 
+# png('../plots/fig.2.D.png',
+#     width = 8, height = 8, units = 'in', res = 1500)
+# fig.2.D
+# dev.off()
+# 
+# png('../plots/fig.2.E.png',
+#     width = 8, height = 8, units = 'in', res = 1500)
+# fig.2.E
+# dev.off()
+# 
+# png('../plots/pft_year_fig.png', 
+#     width = 12, height = 8, units = 'in', res = 1500)
+# pft_year_fig 
+# dev.off()
+# 
+# png('../plots/pft_trt_fig.png',
+#     width = 12, height = 8, units = 'in', res = 1500)
+# pft_trt_fig
+# dev.off()
 
 
 
@@ -740,6 +757,8 @@ biomass_06_cleaned <- summarise(biomass_05.5_cleaned_groupby,
 which(is.na(biomass_06_cleaned))
 sum(is.na(biomass_06_cleaned))
 
+
+
 ###############################################################################
 ### figures real quick
 ###############################################################################
@@ -771,17 +790,59 @@ ggplot(data = subset(biomass_06_cleaned, biomass.weight_all != 0),
 # accounting for year-to-year differences
 
 # log transform to fix normality issue
-mod_biomass_year.trt <- lmer(log(biomass.weight_all) ~ 
+# added the +0.01, because log and 0 do not work
+# mod_biomass_year.trt <- lmer(log(biomass.weight_all+0.01) ~ 
+#                                yearfac * nfac * pfac * kfac + 
+#                                (1|plotfac) + 
+#                                (1|block), 
+#                              data = biomass_06_cleaned)
+# plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+
+
+############################################## 2024/05/09 "Zero inflation" start
+
+# LEMON - 2024/05/06: need to looki into "Zero Inflation Issue" for both 
+# biomass model and the pft model. The residual plots look less than ideal. 
+# ZINNY NOTES: won't run lmer, you run glmmtmb in that function you call (depends on what you are doing)
+# which model fits best. Internet search, is there another model that includes random effect that handles 
+# zero inflation (besides glmmTMB). Zinny note, still hard to figure out what family to use, YOU CAN decide 
+# that based on your dataset. 
+
+## ZINNY HELP!
+## load library
+install.packages("glmmTMB")
+library(glmmTMB)
+
+## glmmTMB model for the zero issye
+# glmmTMB = random effect, book = only fixed effect. this code handled over dispersion
+# to handle zero inflation you need to do another thing, 
+
+## because positive skewed trying sqrt, didn't work tried log (+0.01), remove/ update family?
+## zi = considers the inflation
+mod_biomass_year.trt <- glmmTMB(log(biomass.weight_all+0.01) ~ 
                                yearfac * nfac * pfac * kfac + 
                                (1|plotfac) + 
                                (1|block), 
-                             data = biomass_06_cleaned)
+                             data = biomass_06_cleaned, zi = ~1)
 
-## LEMON - Error in "mkRespMod(fr, REML = REMLpass) : NA/NaN/Inf in 'y'"
-## happened after adding a "template" for the data
-## issue with growth form types I think..?
-## Biomass growth form and treatment
-unique(biomass_05_cleaned_growthforms$growth_form)
+# check normal (not), stochasisittty, model assumptions
+plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+qqnorm(residuals(mod_biomass_year.trt))
+qqline(residuals(mod_biomass_year.trt))
+hist(residuals(mod_biomass_year.trt))
+Anova(mod_biomass_year.trt) #type II and III
+summary(mod_biomass_year.trt)
+
+## glm notes Zinny, 
+mod_biomass_year.trt <- glmmTMB(log(biomass.weight_all+0.01) ~ 
+                                  yearfac * nfac * pfac * kfac + 
+                                  (1|plotfac) + 
+                                  (1|block), 
+                                data = biomass_06_cleaned, zi = ~1)
+
+## need to review Zuur book chapter 11 for the "Zero Inflation Issue" 
+
+############################################## 2024/05/09 "Zero inflation" end
 
 
 ## check the residuals
