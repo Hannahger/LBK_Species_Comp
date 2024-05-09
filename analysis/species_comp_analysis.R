@@ -3,6 +3,21 @@
 ## data spans from 2018 to 2023 
 ## author : Hannah German 
 
+###############################################################################
+## index
+
+### stopping place search "LEMON"
+
+## species comp. analysis, start ~ 34
+# model 01: diversity ~ 108
+# model 02: richness ~ 132
+# model 03: evenness ~ 150
+# model 04: pft ~ 282
+
+## biomass analysis, start ~ 573
+# model 05: biomass ~ 727 
+###############################################################################
+
 ## load packages
 library(tidyverse)
 library(lme4)
@@ -28,9 +43,12 @@ library(scales)
 spcomp_data <- read.csv("../data/species_comp.csv")
 
 ## remove litter and bareground estimates
-spcomp_data_plants <- subset(spcomp_data, binomial != 'litter' & binomial != 'bareground')
-head(spcomp_data_plants)
-### Assessment of % cover within this datasheet due to outliers   ## No longer a concern (1/23) ##
+spcomp_data_plants <- subset(spcomp_data, binomial != 'litter' & 
+                               binomial != 'bareground')
+
+
+### Assessment of % cover within this datasheet due to outliers   
+## No longer a concern (1/23) ##
 #### P15 2022: D=1666, E=555, R=3; %Cover=1, 2, 1, 70
 #### P23 2022: D=1428, E=357, R=4; %Cover=2, 7
 #### P24 2020: D=1111, E=1111, R=1; %Cover=3
@@ -38,22 +56,29 @@ head(spcomp_data_plants)
 #### P42 2022: D=909, E=303, R=3; %Cover= 1, 1, 3
 
 ## square percent covers for diversity estimate
-spcomp_data_plants$Percent.Cover.squared <- (spcomp_data_plants$Percent.Cover/100) * (spcomp_data_plants$Percent.Cover/100)
+spcomp_data_plants$Percent.Cover.squared <- 
+  (spcomp_data_plants$Percent.Cover/100) * 
+  (spcomp_data_plants$Percent.Cover/100)
 
 ## calculate diversity indices
 
 ### group by plot per year per day of year
-spcomp_data_groupby_plot_year <- group_by(spcomp_data_plants, Plot, Year, DOY) # NGS: don't add species information here as we are summarising by plot
+# NGS: don't add species information here as we are summarising by plot
+spcomp_data_groupby_plot_year <- group_by(spcomp_data_plants, Plot, Year, DOY) 
 
 ### richness per plot per year per day of year
-spcomp_data_plot_year_richness <- summarise(spcomp_data_groupby_plot_year, richness = n_distinct(binomial))
+spcomp_data_plot_year_richness <- summarise(spcomp_data_groupby_plot_year, 
+                                            richness = n_distinct(binomial))
 head(spcomp_data_plot_year_richness)
 
 ### diversity per year per day of year
-spcomp_data_plot_year_diversity <- summarise(spcomp_data_groupby_plot_year, diversity = 1/sum(Percent.Cover.squared))
+spcomp_data_plot_year_diversity <- 
+  summarise(spcomp_data_groupby_plot_year, 
+            diversity = 1/sum(Percent.Cover.squared))
 head(spcomp_data_plot_year_diversity)
 
-### combine richness and diversity datasets and calculate evenness per year per day of year
+### combine richness and diversity datasets and 
+### calculate evenness per year per day of year
 spcomp_diversity <- left_join(spcomp_data_plot_year_richness, spcomp_data_plot_year_diversity)
 head(spcomp_diversity)
 spcomp_diversity$evenness <- spcomp_diversity$diversity/spcomp_diversity$richness
@@ -97,6 +122,11 @@ Summ_spcomp_diversity_ptype_wPlots$block[Summ_spcomp_diversity_ptype_wPlots$Plot
 #### remove certain plot types
 spcomp_data_4lmer <- subset(Summ_spcomp_diversity_ptype_wPlots, trt!= 'Fence'& trt != 'NPK+Fence'& trt != 'xControl')
 
+
+###############################################################################
+### Model 01: diversity
+###############################################################################
+
 #### statistical models of diversity across years
 # testing the hypotheses about treatment impacts on community diversity, accounting for year-to-year differences
 mod_div.year.trt <- lmer(log(diversity) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
@@ -116,6 +146,10 @@ cld(emmeans(mod_div.year.trt, ~nfac*kfac))
 #anova_table_d <- gt(anova_results_d, rownames_to_stub = TRUE)
 
 
+###############################################################################
+### Model 02: richness
+###############################################################################
+
 mod_rich.year.trt <- lmer(richness ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                           data = (spcomp_data_4lmer))  
 plot(resid(mod_rich.year.trt) ~ fitted(mod_rich.year.trt))
@@ -124,11 +158,21 @@ cld(emmeans(mod_rich.year.trt, ~yearfac))
 cld(emmeans(mod_rich.year.trt, ~yearfac*nfac))
 cld(emmeans(mod_rich.year.trt, ~nfac*pfac))
 
+
+###############################################################################
+### Model 03: evenness
+###############################################################################
+
 mod_evenness.year.trt <- lmer(log(evenness) ~ yearfac * nfac * pfac * kfac + (1| plotfac) + (1|block), 
                               data = (spcomp_data_4lmer))  
 plot(resid(mod_evenness.year.trt) ~ fitted(mod_evenness.year.trt)) # check this
 Anova(mod_evenness.year.trt)  
 cld(emmeans(mod_evenness.year.trt, ~yearfac))
+
+
+###############################################################################
+### Model 04: prep (treatment on pfts)
+###############################################################################
 
 ## look at treatment impacts on each plant type
 head(spcomp_data_plants)
@@ -245,6 +289,11 @@ hist(subset(pft_data_4lmer, pft == 'c3_perennial_woody')$sum_cover_zeroes) # nop
 hist(subset(pft_data_4lmer, pft == 'c4_annual_forb')$sum_cover_zeroes) # ok!
 hist(subset(pft_data_4lmer, pft == 'c4_perennial_forb')$sum_cover_zeroes) # nope
 hist(subset(pft_data_4lmer, pft == 'c4_perennial_grass')$sum_cover_zeroes) # ok!
+
+
+###############################################################################
+### Model 04: pfts
+###############################################################################
 
 #### analysis with all pfts 
 all_pft_lmer <- lmer(log(sum_cover_zeroes+0.01) ~ yearfac * nfac * pfac * kfac * pft + (1| plotfac) + (1|block), 
@@ -558,3 +607,194 @@ png('../plots/pft_trt_fig.png',
     width = 12, height = 8, units = 'in', res = 1500)
 pft_trt_fig
 dev.off()
+
+
+
+###############################################################################
+###############################################################################
+##
+## 🍂 ~~ Biomass analysis begins here ~~ 🍂
+##
+###############################################################################
+###############################################################################
+
+
+###############################################################################
+## Loading and cleaning data
+###############################################################################
+
+### Original data, LBK biomass ----
+biomass_00_raw <- read.csv('data/Biomass.csv')
+
+
+### Cleaning ---- 
+
+
+## making copy of "biomass_00_raw" for cleaning below
+biomass_01_plants <- biomass_00_raw
+
+## making a new column to standardize growth forms 
+# code used to check unique life forms
+unique(biomass_01_plants$pft)
+unique(biomass_01_plants$growth_form)
+
+# grass
+biomass_01_plants$growth_form[biomass_01_plants$pf == 'grasses' | 
+                                biomass_01_plants$pft == 'grasses ' |
+                                biomass_01_plants$pft == 'grass'] <- 'grass'
+
+# forb
+biomass_01_plants$growth_form[biomass_01_plants$pf == 'herbs'] <- 'forb'
+
+# woody species
+biomass_01_plants$growth_form[biomass_01_plants$pf == 'woody'] <- 'woody'
+
+
+# dead 
+biomass_01_plants$growth_form[biomass_01_plants$pf == 'Dead' | 
+                                biomass_01_plants$pft == 'dead'] <- 'dead'
+
+
+## TEMPLATE: creating a template for each plot with 4 cats. for growth form
+# data for the template
+Plot <- 1:42 # number plots at lubb site, always the same
+Year <- c(unique(biomass_01_plants$Year)) # years in data
+growth_form <- c(unique(biomass_01_plants$growth_form)) # growth forms
+
+# creating the template using "expand.grid"
+# expand.grid, creates DF from all combinations of the supplied "bits"
+template <- expand.grid(Plot = Plot, Year = Year, growth_form = growth_form)
+template$value <- 0 # give all categories a zero value to start with. 
+
+# merge the template and the raw biomass data, "all.x" keep all temp. data
+biomass_01_plants <- merge(template, biomass_01_plants, 
+                           by = c("Plot", "Year", "growth_form"), all.x = TRUE) 
+
+# replacing NA values with 0
+biomass_01_plants[is.na(biomass_01_plants)] <- 0
+unique(biomass_01_plants$weight)
+
+
+## grouping and summarizing code
+# group by plot per year
+biomass_02_grouped <- group_by(biomass_01_plants, Plot, Year, DOY, growth_form)
+head(biomass_02_grouped)
+
+# means for growth_form weights by plot
+biomass_03_mean.weight <- summarise(biomass_02_grouped, biomass.weight 
+                                    = mean(weight))
+
+
+
+### adding in additional site and plot information ----
+
+## reading in plot information
+plot_information <- read.csv('data/plot_types.csv')[,2:3]
+
+## adding plot information to biomass data
+biomass_04_plot.info <- left_join(biomass_03_mean.weight, plot_information)
+
+## adding specific plot type columns
+biomass_04_plot.info <- biomass_04_plot.info %>%
+  mutate(n = ifelse(trt == "N" | trt == "NP" | trt == "NK" | trt == "NPK" 
+                    | trt == "NPK+Fence", 1, 0),
+         p = ifelse(trt == "P" | trt == "NP" | trt == "PK" | trt == "NPK" 
+                    | trt == "NPK+Fence", 1, 0),
+         k = ifelse(trt == "K" | trt == "NK" | trt == "PK" | trt == "NPK" 
+                    | trt == "NPK+Fence", 1, 0))
+
+## add in treatment as binary factors
+biomass_04_plot.info$nfac <- as.factor(biomass_04_plot.info$n)
+biomass_04_plot.info$pfac <- as.factor(biomass_04_plot.info$p)
+biomass_04_plot.info$kfac <- as.factor(biomass_04_plot.info$k)
+
+## add in plot and year as binary factors
+biomass_04_plot.info$plotfac <- as.factor(biomass_04_plot.info$Plot)
+biomass_04_plot.info$yearfac <- as.factor(biomass_04_plot.info$Year)
+
+## add in blocks 
+biomass_04_plot.info$block <- 'block2'
+biomass_04_plot.info$block[biomass_04_plot.info$Plot <15] <- 'block1'
+biomass_04_plot.info$block[biomass_04_plot.info$Plot >28] <- 'block3'
+
+
+## removing certain plot types (fence, extra control plots)
+biomass_05_cleaned_growthforms <- subset(biomass_04_plot.info, !(trt == 'Fence' 
+                                                     | trt == 'NPK+Fence' 
+                                                     |trt == 'xControl'))
+
+## removing 'dead' growthforms
+biomass_05_cleaned_growthforms <- subset(biomass_05_cleaned_growthforms, 
+                                         !(growth_form == 'dead'))
+                                                                 
+
+## aggregate to a single value for biomass per plot per year
+biomass_05.5_cleaned_groupby <- group_by(biomass_05_cleaned_growthforms, 
+                                         Plot, Year, DOY, trt, n, p, k, nfac, 
+                                         pfac, kfac, plotfac, yearfac, block)
+
+biomass_06_cleaned <- summarise(biomass_05.5_cleaned_groupby, 
+                                biomass.weight_all = 
+                                  sum(biomass.weight,na.rm=T))
+
+which(is.na(biomass_06_cleaned))
+sum(is.na(biomass_06_cleaned))
+
+###############################################################################
+### figures real quick
+###############################################################################
+
+## Biomass weight, and treatment
+ggplot(data = biomass_06_cleaned, aes(trt, biomass.weight_all, fill = trt)) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge") +
+  theme_minimal()
+
+# all biomass weight (even the zeros)
+ggplot(data = biomass_06_cleaned, aes(trt, biomass.weight_all, fill = trt)) +
+  geom_boxplot() +
+  theme_minimal()
+
+# zero values removed
+ggplot(data = subset(biomass_06_cleaned, biomass.weight_all != 0), 
+       aes(trt, biomass.weight_all, fill = trt)) +
+  geom_boxplot() +
+  theme_minimal()
+
+
+
+###############################################################################
+### Model 05 : Biomass, year and treatments
+###############################################################################
+
+## statistical models of diversity across years
+# testing the hypotheses about treatment impacts on community diversity, 
+# accounting for year-to-year differences
+
+# log transform to fix normality issue
+mod_biomass_year.trt <- lmer(log(biomass.weight_all) ~ 
+                               yearfac * nfac * pfac * kfac + 
+                               (1|plotfac) + 
+                               (1|block), 
+                             data = biomass_06_cleaned)
+
+## LEMON - Error in "mkRespMod(fr, REML = REMLpass) : NA/NaN/Inf in 'y'"
+## happened after adding a "template" for the data
+## issue with growth form types I think..?
+## Biomass growth form and treatment
+unique(biomass_05_cleaned_growthforms$growth_form)
+
+
+## check the residuals
+# Component-Component plus Residual plot (CCPR plot)
+plot(mod_biomass_year.trt, which = 1)
+plot(resid(mod_biomass_year.trt) ~ fitted(mod_biomass_year.trt))
+hist(biomass_06_cleaned$biomass.weight_all)
+hist(log(biomass_06_cleaned$biomass.weight_all))
+
+## Anova
+biomass_mod_anova <- Anova(mod_biomass_year.trt)
+biomass_mod_anova
+summary(biomass_mod_anova)
+
+## post-hoc analyses
+emmeans(mod_biomass_year.trt, ~yearfac)
